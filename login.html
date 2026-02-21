@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TripSync Login</title>
+<link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+<div class="login-wrapper">
+
+  <div class="login-card">
+    <h2>🌍 TripSync</h2>
+    <p class="subtitle">Plan together. Travel smarter.</p>
+
+    <input type="email" id="email" placeholder="Email address">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="loginUser()" style="margin-top:15px;">Login</button>
+
+    <p class="signup-text">
+      New here? <a href="create-account.html">Create account</a>
+    </p>
+  </div>
+
+</div>
+
+<script>
+// Login handled by js/auth.js -> loginUser(email,password)
+// Allow Enter key to submit by delegating to window.loginUser
+document.addEventListener('DOMContentLoaded', () => {
+  const inputs = document.querySelectorAll('#email, #password');
+  inputs.forEach(input => {
+    input.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter' && typeof window.loginUser === 'function') window.loginUser();
+    });
+  });
+});
+</script>
+<script src="js/auth.js"></script>
+
+</body>
+</html>
+

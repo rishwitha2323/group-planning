@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TripSync</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/itinerary.css">
+<link rel="stylesheet" href="css/chat.css">
+<link rel="stylesheet" href="css/expenses.css">
+</head>
+
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+  <h2 style="color:#F5EBDD;">🌍 TripSync</h2>
+
+  </aside>
+
+  <main class="main">
+<div class="top-bar">
+  <h2 id="welcomeText">Hello 👋</h2>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+  <!-- Role-specific panels (visibility controlled by js/auth.js) -->
+  <div id="adminPanel" class="card" style="display:none;">
+    <h3>🛠 Admin Dashboard</h3>
+    <div style="margin-bottom:20px;">
+      <h4>📋 All Users</h4>
+      <p style="margin:0 0 10px 0;color:#666;">Click <strong>Show Logs</strong> to load user & login activity. This prevents loading sensitive lists automatically.</p>
+      <button onclick="showLogs()" id="showLogsBtn" style="margin-bottom:12px;padding:8px 12px;">� Show Logs</button>
+      <div id="allUsersList" style="display:none;"></div>
+    </div>
+    <hr>
+    <div>
+      <h4>🔐 Login Activity</h4>
+      <div id="loginActivityContainer" style="display:none;"></div>
+      <!-- Activity refreshed when Show Logs is clicked -->
+    </div>
+  </div>
+
+  <div id="organizerPanel" class="card" style="display:none;">
+    <h3>👥 Organizer - Team Management</h3>
+    <div style="background:#f9f9f9;padding:15px;border-radius:5px;margin-bottom:15px;">
+      <p style="margin:0;color:#666;font-size:0.9em;">Add your travel teammates by their email address and location</p>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+      <input id="newTeammateEmail" placeholder="Teammate email (e.g., john@example.com)" style="flex:1;">
+      <input id="newTeammateLocation" placeholder="Location/City (optional)" style="flex:0.7;">
+    </div>
+    <button onclick="addTeammate()" style="width:100%;padding:10px;">➕ Add Teammate</button>
+    <div id="organizerTeammatesList" style="margin-top:15px;"></div>
+  </div>
+
+  <div id="touristGuidePanel" class="card" style="display:none;">
+    <h3>🗺️ Tourist Guide - Location Finder</h3>
+    <div style="background:#f0f8ff;padding:15px;border-radius:5px;margin-bottom:15px;">
+      <p style="margin:0;color:#666;font-size:0.9em;">View travelers near the organizer's destination</p>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label for="organizerSelect" style="display:block;margin-bottom:6px;color:#444;">Choose Organizer</label>
+      <select id="organizerSelect" style="padding:8px;border:1px solid #ddd;border-radius:6px;width:100%;"></select>
+      <button id="loadOrganizerTrip" style="margin-top:8px;padding:8px 10px;background:#2563eb;color:#fff;border-radius:6px;">Load Organizer Trip</button>
+    </div>
+    <div id="guideTripDetails" style="margin-bottom:12px;"></div>
+    <div id="nearbyMembers"></div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/script.js"></script>
+
+    <!-- Dashboard -->
+<section class="card">
+  <h3>✈ <span id="tripNameDisplay">No Trip Set</span></h3>
+  <p id="tripDetailsDisplay">Enter trip details below</p>
+
+  <div class="trip-form">
+    <input type="text" id="tripName" placeholder="Trip Name">
+
+    <label>Start Date</label>
+    <input type="date" id="startDate">
+
+    <label>End Date</label>
+    <input type="date" id="endDate">
+
+    <input type="number" id="tripMembers" placeholder="Members">
+
+    <input type="text" id="hotelName" placeholder="Hotel Name"> <!-- Added Hotel Input -->
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input type="text" id="activityInput" placeholder="Add Activity" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;">
+      <input type="file" id="activityPhoto" accept="image/*" style="flex:0.7;">
+      <button type="button" onclick="addActivity()" style="padding:8px 12px;background:#2563eb;color:#fff;border-radius:6px;">Add Activity</button>
+    </div>
+
+    <div id="activityList"></div>
+
+    <button type="button" onclick="saveTripDetails()">Save Trip</button>
+
+    <button type="button" onclick="resetAll()" style="background:#a366178a;color:white;margin-top:10px;">
+      RESET
+    </button>
+  </div>
+</section>
+
+<!-- Trip photos section -->
+<section class="card">
+  <h3>📸 Trip Photos</h3>
+  <p style="color:#666;margin-top:0;">Add photos for this trip (title + multiple images). Photos are stored locally in your browser.</p>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+    <input type="text" id="photoTitle" placeholder="Photo title (e.g., Beach sunset)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;">
+    <input type="file" id="photoFiles" accept="image/*" multiple style="flex:1;">
+    <button onclick="addTripPhotos()" style="padding:8px 12px;background:#059669;color:#fff;border-radius:6px;">Add Photos</button>
+  </div>
+  <div id="tripPhotosContainer" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+</section>
+
+
+
+
+    <!-- Itinerary -->
+  <section class="card">
+  <h3>🗓 Itinerary Planner</h3>
+
+  <div class="add-act">
+    <input type="number" id="dayCount" placeholder="Enter number of days">
+    <button onclick="createDays()">Set Days</button>
+  </div>
+
+  <div class="add-act">
+    <input type="text" id="newActivity" placeholder="Enter activity">
+    <button onclick="createActivity()">Add Activity</button>
+  </div>
+
+  <h4>Activity Pool</h4>
+  <div id="activityPool" class="timeline dropzone"></div>
+
+  <div id="daysContainer"></div>
+</section>
+
+
+    <!-- Voting -->
+    <section class="card">
+      <h3>🗳 Destination Vote</h3>
+      <input id="pollQuestion" placeholder="Enter poll question">
+<input id="option1" placeholder="Option 1">
+<input id="option2" placeholder="Option 2">
+<input id="option3" placeholder="Option 3">
+<button onclick="createPoll()">Create Poll</button>
+
+<div id="pollArea"></div>
+      <p id="voteResult"></p>
+    </section>
+
+    <!-- AI Recommendations -->
+  <section class="card ai-box">
+  <h3>🗺 Route Planner</h3>
+    <div class="distance-box" style="padding:12px;">
+      <h4>Distance / Route</h4>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <input type="text" id="fromLocation" placeholder="From (e.g., Hyderabad)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;">
+        <input type="text" id="toLocation" placeholder="To (e.g., Goa)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;">
+        <button id="distanceBtn" onclick="calculateRoute()" style="padding:8px 12px;background:#2563eb;color:#fff;border-radius:6px;">Get Route</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;padding:12px;background:#fff;border-radius:8px;">
+      <h4>Nearby Recommendations</h4>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
+        <input id="recommendDestination" placeholder="Enter destination (e.g., Paris)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;">
+        <select id="recommendRadius" style="padding:8px;border:1px solid #ddd;border-radius:6px;">
+          <option value="5">5 km</option>
+          <option value="10">10 km</option>
+          <option value="20">20 km</option>
+        </select>
+        <button onclick="getRecommendations()" style="padding:8px 12px;background:#059669;color:#fff;border-radius:6px;">Get Recommendations</button>
+      </div>
+
+      <div id="nearbyRecommendations" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;"></div>
+    </div>
+
+  </section>
+
+
+    <!-- Chat -->
+    <section class="card chat">
+      <h3>💬 Group Chat</h3>
+      <div id="chatBox" class="chat-box"></div>
+      <input id="chatInput" placeholder="Message..." />
+    </section>
+
+    <!-- Expenses -->
+   <!-- Expenses -->
+<section class="card">
+  <h3>💰 Expense Splitter</h3>
+     <link rel="stylesheet" href="css/expense.css">
+
+  <input type="number" id="memberCount" placeholder="Number of members">
+  <button onclick="setMembers()">Set Members</button>
+
+  <div id="memberInputs"></div>
+  <button id="saveMembersBtn" style="display:none;" onclick="saveMembers()">Save Members</button>
+
+  <hr>
+
+  <input type="number" id="amount" placeholder="Enter expense amount">
+  <select id="payer"></select>
+  <button onclick="addExpense()">Add Expense</button>
+
+  <div id="expenseList"></div>
+  <pre id="splitResult"></pre>
+<button onclick="resetAll()" style="background: #d2aa8a;color:white;margin-top:10px;">
+  RESET
+</button>
+
+</section>
+
+
+  </main>
+</div>
+
+<script src="data/mockData.js"></script>
+<script src="js/script.js"></script>
+<script src="js/itinerary.js"></script>
+<script src="js/voting.js"></script>
+<script src="js/recommendation.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/expenses.js"></script>
+
+</body>
+</html>
+
