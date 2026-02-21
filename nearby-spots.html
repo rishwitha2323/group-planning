@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nearby Spots — Wanderlust</title>
+    <!-- Tailwind CDN (keeps your theme intact; utilities only) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React + ReactDOM + Babel for in-browser JSX (development) -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <!-- Leaflet for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+      body { background: white; }
+      #map { height: 320px; border-radius: 8px; }
+    </style>
+  </head>
+  <body class="p-6">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      function fetchNearby(destination, radius){
+        return fetch(`/api/nearby-spots?destination=${encodeURIComponent(destination)}&radius=${radius}`)
+          .then(r => r.json());
+      }
+
+      function Map({ center, markers }){
+        const mapRef = useRef(null);
+        useEffect(()=>{
+          if(!center) return;
+          if(!mapRef.current){
+            mapRef.current = L.map('map').setView(center, 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mapRef.current);
+          } else {
+            mapRef.current.setView(center, 13);
+            mapRef.current.eachLayer(l => {
+              if(l && l._url) return; // tile layer
+              try{ mapRef.current.removeLayer(l);}catch(e){}
+            });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mapRef.current);
+          }
+
+          markers && markers.forEach(m => {
+            const marker = L.marker([m.lat, m.lon]).addTo(mapRef.current).bindPopup(`<strong>${m.name}</strong><br/>${m.category}<br/>${m.distance_km} km`);
+          });
+
+        }, [center, markers]);
+        return <div id="map"></div>;
+      }
+
+      function Card({ spot, onAdd, onShow, isFeatured, onToggleFeatured, isAdmin }){
+        return (
+          <div className="p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white border">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">{spot.name}</h3>
+                <p className="text-sm text-gray-600">{spot.category} · {spot.distance_km} km</p>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <button onClick={()=>{
+                    if(spot.lat && spot.lon){
+                      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.lat + ',' + spot.lon)}`;
+                      window.open(mapsUrl, '_blank');
+                    } else {
+                      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name || '')}`;
+                      window.open(mapsUrl, '_blank');
+                    }
+                  }} className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Open in Google Maps</button>
+                <button onClick={()=>onAdd(spot)} className="px-3 py-1 bg-amber-400 text-black rounded hover:bg-amber-500">Add to Want to Visit</button>
+                {isAdmin && (
+                  <button onClick={()=>onToggleFeatured(spot)} className={`px-3 py-1 rounded ${isFeatured? 'bg-green-500 text-white' : 'bg-gray-200'}`}>{isFeatured ? 'Featured' : 'Mark Featured'}</button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function NearbySpotsApp(){
+        const [destination, setDestination] = useState('');
+        const [radius, setRadius] = useState(5);
+        const [results, setResults] = useState([]);
+        const [center, setCenter] = useState(null);
+        const [markers, setMarkers] = useState([]);
+        const [loading, setLoading] = useState(false);
+        const [wantToVisit, setWantToVisit] = useState(JSON.parse(localStorage.getItem('wantToVisit')||'[]'));
+        const role = localStorage.getItem('role') || 'teammate';
+        const isAdmin = role === 'admin';
+        const searchTimer = useRef(null);
+
+        useEffect(()=>{
+          // if destination present in query string, auto-search
+          const params = new URLSearchParams(window.location.search);
+          const q = params.get('destination');
+          if(q){ setDestination(q); doSearch(q, radius); }
+        },[]);
+
+        // auto-search when destination or radius changes (debounced)
+        useEffect(()=>{
+          if(!destination || destination.length < 2) return;
+          if(searchTimer.current) clearTimeout(searchTimer.current);
+          searchTimer.current = setTimeout(()=>{
+            doSearch(destination, radius);
+          }, 700);
+          return ()=>{ if(searchTimer.current) clearTimeout(searchTimer.current); };
+        }, [destination, radius]);
+
+        function saveWant(list){
+          setWantToVisit(list);
+          localStorage.setItem('wantToVisit', JSON.stringify(list));
+        }
+
+        function addToWant(spot){
+          const exists = wantToVisit.find(w => w.id === spot.id);
+          if(exists) return alert('Already in Want to Visit');
+          const next = [...wantToVisit, spot];
+          saveWant(next);
+          alert('Added to Want to Visit');
+        }
+
+        async function doSearch(dest, r){
+          setLoading(true);
+          try{
+            const data = await fetchNearby(dest, r);
+            const arr = data.results || [];
+            setResults(arr);
+            if(arr.length>0){
+              setCenter([arr[0].lat, arr[0].lon]);
+              setMarkers([{lat: arr[0].lat, lon: arr[0].lon, name: 'Destination', category: 'destination'} , ...arr.map(a=>({lat:a.lat,lon:a.lon,name:a.name,category:a.category,distance_km:a.distance_km}))]);
+            } else {
+              // try center via nominatim quick call
+              const nom = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest)}&limit=1`);
+              const nd = await nom.json();
+              if(nd && nd[0]){ setCenter([parseFloat(nd[0].lat), parseFloat(nd[0].lon)]); setMarkers([]); }
+            }
+          }catch(e){ console.error(e); alert('Error fetching nearby spots'); }
+          setLoading(false);
+        }
+
+        function showSpotOnMap(spot){
+          setCenter([spot.lat, spot.lon]);
+          setMarkers([{lat: spot.lat, lon: spot.lon, name: spot.name, category: spot.category}]);
+        }
+
+        async function markFeatured(spot){
+          // call backend to toggle featured for custom spots
+          const id = spot.id;
+          const currently = !!spot.featured;
+          try{
+            const resp = await fetch('/api/nearby-spots/feature', { method: 'POST', headers: {'Content-Type':'application/json','x-role':'admin'}, body: JSON.stringify({ id, featured: !currently }) });
+            const j = await resp.json();
+            if(j && j.success){
+              // refresh list (simple approach)
+              doSearch(destination, radius);
+            }
+          }catch(e){ console.error(e); alert('Failed to toggle featured'); }
+        }
+
+        return (
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">Nearby Spots</h1>
+              <div className="space-x-3">
+                <a href="index.html" className="text-sm text-gray-600">Home</a>
+                <a href="#want" className="text-sm text-gray-600">Want to Visit</a>
+                <a href="#nearby" className="text-sm text-gray-800 font-medium">Nearby Spots</a>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="col-span-2">
+                <div className="mb-4 p-4 bg-white rounded shadow">
+                  <div className="flex gap-3">
+                    <input value={destination} onChange={e=>setDestination(e.target.value)} placeholder="Search destination (e.g., Paris)" className="flex-1 p-2 border rounded" />
+                    <select value={radius} onChange={e=>setRadius(parseInt(e.target.value,10))} className="p-2 border rounded">
+                      <option value={5}>5 km</option>
+                      <option value={10}>10 km</option>
+                      <option value={20}>20 km</option>
+                    </select>
+                    <button onClick={()=>doSearch(destination, radius)} className="px-4 bg-blue-600 text-white rounded">{loading? 'Searching...' : 'Search'}</button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {results.map(s => (
+                    <Card key={s.id} spot={s} onAdd={addToWant} onShow={showSpotOnMap} isFeatured={!!s.featured} onToggleFeatured={markFeatured} isAdmin={isAdmin} />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-4 p-4 bg-white rounded shadow">
+                  <h3 className="font-semibold mb-2">Map</h3>
+                  <Map center={center} markers={markers} />
+                </div>
+
+                {isAdmin && (
+                  <div className="mb-4 p-4 bg-white rounded shadow">
+                    <h3 className="font-semibold mb-2">Admin: Add Custom Spot</h3>
+                    <form onSubmit={addCustomSpot} className="space-y-2">
+                      <input name="name" placeholder="Name" className="w-full p-2 border rounded" />
+                      <input name="category" placeholder="Category" className="w-full p-2 border rounded" />
+                      <div className="flex gap-2">
+                        <input name="lat" placeholder="Latitude" className="flex-1 p-2 border rounded" />
+                        <input name="lon" placeholder="Longitude" className="flex-1 p-2 border rounded" />
+                      </div>
+                      <textarea name="description" placeholder="Description" className="w-full p-2 border rounded" />
+                      <div className="flex gap-2">
+                        <button type="submit" className="px-3 py-1 bg-indigo-600 text-white rounded">Add Spot</button>
+                        <button type="button" onClick={()=>{ navigator.clipboard && navigator.clipboard.writeText(JSON.stringify({lat:center&&center[0],lon:center&&center[1]})) }} className="px-3 py-1 bg-gray-200 rounded">Copy Center</button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                <div id="want" className="p-4 bg-white rounded shadow">
+                  <h3 className="font-semibold mb-2">Want to Visit</h3>
+                  <ul className="space-y-2">
+                    {wantToVisit.map(w => (
+                      <li key={w.id} className="p-2 border rounded">{w.name} <span className="text-sm text-gray-500">· {w.category}</span></li>
+                    ))}
+                    {wantToVisit.length === 0 && <li className="text-gray-500">No spots yet.</li>}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.render(<NearbySpotsApp />, document.getElementById('root'));
+    </script>
+  </body>
+</html>

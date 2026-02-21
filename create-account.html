@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Create Account — TripSync</title>
+  <link rel="stylesheet" href="css/login.css">
+  <style>
+    .form-row{display:flex;gap:10px;margin-bottom:10px}
+    .form-row input{flex:1}
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <h2>📝 Create Account</h2>
+      <div class="form-row">
+        <input id="firstName" placeholder="First name">
+        <input id="lastName" placeholder="Last name">
+      </div>
+      <input id="username" placeholder="Username (optional)">
+      <input id="email" placeholder="Email address">
+      <input id="password" type="password" placeholder="Password">
+      <input id="confirmPassword" type="password" placeholder="Confirm password">
+      <label for="roleSelect">Role</label>
+      <select id="roleSelect">
+        <option value="teammate">Traveller / Teammate</option>
+        <option value="organizer">Organizer</option>
+        <option value="tourist-guide">Tourist Guide</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <button id="createAccountBtn" style="margin-top:12px;">Create Account</button>
+
+      <p style="margin-top:12px">Already have an account? <a href="login.html">Login</a></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('createAccountBtn').addEventListener('click', () => {
+      if(typeof window.registerUser === 'function') window.registerUser();
+      else alert('Auth script not loaded');
+    });
+
+    // Allow Enter to submit
+    document.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter' && typeof window.registerUser === 'function') window.registerUser();
+    });
+  </script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

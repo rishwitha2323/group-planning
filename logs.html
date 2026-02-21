@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TripSync — Logs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:20px}
+    .card{background:#fff;padding:18px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border:1px solid #e6e6e6}
+    th{background:#f7f7f7;text-align:left}
+    .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  </style>
+</head>
+<body>
+  <h2>📜 Logs — TripSync</h2>
+  <div class="card">
+    <div class="controls">
+      <div style="flex:1"><strong>All Users</strong></div>
+      <div>
+        <button id="refreshUsersBtn">🔄 Refresh</button>
+      </div>
+    </div>
+    <div id="usersContainer"></div>
+  </div>
+
+  <div style="height:16px"></div>
+
+  <div class="card">
+    <div class="controls">
+      <div style="flex:1"><strong>Login Activity</strong></div>
+      <div>
+        <button id="refreshActivityBtn">🔄 Refresh Activity</button>
+      </div>
+    </div>
+    <div id="activityContainer"></div>
+  </div>
+
+  <script src="js/logs.js"></script>
+</body>
+</html>
