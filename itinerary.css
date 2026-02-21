@@ -1,0 +1,14 @@
+.timeline {
+  min-height:60px;
+  padding:10px;
+  border:2px dashed #ccc;
+  margin-top:10px;
+}
+
+.activity {
+  padding:8px;
+  background:#f1f3ff;
+  margin:5px 0;
+  border-radius:6px;
+  cursor:grab;
+}

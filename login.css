@@ -1,0 +1,121 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    linear-gradient(rgba(62,39,35,0.65), rgba(62,39,35,0.65)),
+    url("../images/background.jpeg") no-repeat center center/cover;
+}
+
+
+/* Wrapper */
+.login-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Glass Card */
+.login-card {
+  background: rgba(245, 236, 225, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 22px;
+  padding: 45px;
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+  color: #3E2723;
+}
+
+/* Heading */
+.login-card h2 {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  margin-bottom: 28px;
+  color: #6D4C41;
+}
+
+/* Inputs */
+.login-card input {
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 18px;
+  border: none;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+  background: #ECE7E3;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.login-card select {
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 12px;
+  border: none;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+  background: #ECE7E3;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+  cursor: pointer;
+  color: #3E2723;
+}
+
+.login-card select:hover {
+  background: #E0D8D0;
+}
+
+.login-card label {
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  color: #3E2723;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+/* Button */
+.login-card button {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #6D4C41, #5D4037);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-card button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* Signup */
+.signup-text {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #6D4C41;
+}
+
+.signup-text a {
+  color: #3E2723;
+  font-weight: 600;
+  text-decoration: none;
+}

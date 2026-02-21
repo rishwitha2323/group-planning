@@ -1,0 +1,130 @@
+body {
+  background-color: #a366178a;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+
+
+.app { display:flex; }
+.sidebar {
+  width: 250px;
+  color: white;
+  padding: 20px;
+
+  background: url("../images/sidebar.jpeg") no-repeat center center;
+  background-size: 100% 100%;
+}
+
+
+
+.sidebar h2,
+.sidebar li {
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+
+
+.main {
+  flex:1;
+  padding:20px;
+  display:grid;
+  gap:20px;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+}
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 10px 20px rgba(0,0,0,0.15);
+}
+
+.progress span {
+  background:#d4edda;
+  padding:6px 10px;
+  border-radius:6px;
+  margin-right:6px;
+}
+
+.pending { background:#fff3cd; }
+
+.ai-box {
+  background:linear-gradient(135deg,#f6d365,#fda085);
+}
+.page { display: none; }
+.page.active { display: block; }
+.poll-box {
+  background: #d2aa8a;   /* ← THIS is the yellow */
+}
+
+.poll-option {
+  margin:6px 0;
+}
+
+.poll-option button {
+  padding:6px 12px;
+  margin-left:8px;
+  border:none;
+  border-radius:6px;
+  background:#7B5E3B;
+  color:white;
+  cursor:pointer;
+}
+
+.result-bar {
+  height:8px;
+  background:#7B5E3B;
+  border-radius:4px;
+  margin-top:4px;
+}
+.top-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.15);
+  padding: 12px 18px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  color: white;
+}
+
+.logout-btn {
+  background: linear-gradient(90deg,#ff416c,#ff4b2b);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+.card {
+  background: #F5EBDD;
+  color: #4A3728;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 35px rgba(0,0,0,0.35);
+}
+.section-title {
+  background: #7B5E3B;
+  color: white;
+  padding: 8px 14px;
+  font-weight: bold;
+}
+button {
+  background: #7B5E3B;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+button:hover {
+  background: #A67C52;
+}
+h1, h2, h3 {
+  color: #4A3728;
+}
